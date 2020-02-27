@@ -12,7 +12,7 @@ import ru.nik.kotlinkafkapr.model.Message
 
 val jsonMapper = ObjectMapper().apply {
     registerKotlinModule()
-    registerModule(JavaTimeModule())
+//    registerModule(JavaTimeModule())
     dateFormat = StdDateFormat()
 }
 
