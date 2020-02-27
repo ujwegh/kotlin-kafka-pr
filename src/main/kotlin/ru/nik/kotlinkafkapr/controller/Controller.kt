@@ -1,18 +1,15 @@
 package ru.nik.kotlinkafkapr.controller
 
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import ru.nik.kotlinkafkapr.dto.RequestDto
 import ru.nik.kotlinkafkapr.service.KafkaService
-import ru.nik.kotlinkafkapr.service.KafkaServiceImpl
 
 @RestController
 @RequestMapping("/rest")
 class Controller(val kafkaService: KafkaService) {
 
-    companion object{
+    companion object {
         private val logger = LoggerFactory.getLogger(Controller::class.java)
     }
 
