@@ -1,6 +1,8 @@
 package ru.nik.kotlinkafkapr.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.kafka.clients.admin.AdminClient
+import org.apache.kafka.clients.admin.AdminClientConfig
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.common.serialization.StringDeserializer
@@ -27,6 +29,16 @@ class KafkaConfig {
 
     @Value("\${kafka.port:9092}")
     private val port: Int = 0
+
+
+    @Bean
+    fun adminClient() : AdminClient {
+        val props: Map<String, Any> = hashMapOf(
+        Pair(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, listOf("$host:$port")),
+        Pair(AdminClientConfig.RETRIES_CONFIG, 5))
+
+        return AdminClient.create(props)
+    }
 
     @Bean
     fun producerFactory(): ProducerFactory<String, Message> {

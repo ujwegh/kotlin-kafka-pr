@@ -16,13 +16,19 @@ class Controller(val kafkaService: KafkaService) {
     @PostMapping("/message")
     fun sendMessage(@RequestBody dto: RequestDto) {
         logger.info("Send message: {}", dto)
-        kafkaService.sendMessage(dto.user, dto.message)
+        kafkaService.sendMessage(dto.topic, dto.userName, dto.message)
     }
 
     @GetMapping("/topics")
     fun getTopics(): List<String> {
         logger.info("Get all topics")
         return kafkaService.getTopics()
+    }
+
+    @PostMapping("/topic")
+    fun createTopic(@RequestParam("name") name: String) {
+        logger.info("Create new topic: {}", name)
+        kafkaService.createTopic(name)
     }
 
 }
