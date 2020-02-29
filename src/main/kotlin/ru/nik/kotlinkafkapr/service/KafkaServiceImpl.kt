@@ -1,9 +1,6 @@
 package ru.nik.kotlinkafkapr.service
 
-import org.apache.kafka.clients.admin.AdminClient
-import org.apache.kafka.clients.admin.AdminClientConfig
-import org.apache.kafka.clients.admin.CreateTopicsResult
-import org.apache.kafka.clients.admin.NewTopic
+import org.apache.kafka.clients.admin.*
 import org.apache.kafka.clients.consumer.Consumer
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
@@ -12,6 +9,9 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import ru.nik.kotlinkafkapr.exceptions.TopicException
 import ru.nik.kotlinkafkapr.model.Message
+import java.util.*
+import java.util.stream.Collectors
+import kotlin.streams.toList
 
 
 @Service
@@ -30,16 +30,14 @@ class KafkaServiceImpl(val kafkaTemplate: KafkaTemplate<String, Message>,
     }
 
     override fun getTopics(): List<String> {
-        val consumer: Consumer<String, String> = consumerFactory.createConsumer()
-        val topics = consumer.listTopics()
-        return topics.keys.toList()
+        val result: ListTopicsResult = adminClient.listTopics()
+        return result.names().get().stream().toList()
     }
 
     override fun createTopic(name: String) {
         logger.info("In creating new topic: {}", name)
         val existedTopics = getTopics()
-        println(existedTopics)
-        if (existedTopics.contains(name)){
+        if (existedTopics.contains(name)) {
             throw TopicException("Topic with name: $name already exist.")
         }
 
@@ -54,7 +52,17 @@ class KafkaServiceImpl(val kafkaTemplate: KafkaTemplate<String, Message>,
         }
     }
 
-    @KafkaListener(topics = ["test", "kotlin"], groupId = "users")
+    override fun deleteTopic(name: String) {
+        logger.info("In deleting topic: {}", name)
+        try {
+            val result: DeleteTopicsResult = adminClient.deleteTopics(Collections.singleton(name))
+            result.all().get()
+        } catch (e: Exception) {
+            throw TopicException("Failed to delete topic: $name")
+        }
+    }
+
+    @KafkaListener(topicPattern = "users")
     fun consume(message: String?) {
         logger.info("=> consumed {}", message);
     }

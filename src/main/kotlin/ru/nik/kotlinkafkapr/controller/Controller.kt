@@ -31,4 +31,10 @@ class Controller(val kafkaService: KafkaService) {
         kafkaService.createTopic(name)
     }
 
+    @DeleteMapping("/topic")
+    fun deleteTopic(@RequestParam("name") name: String) {
+        logger.info("Delete topic: {}", name)
+        kafkaService.deleteTopic(name)
+    }
+
 }

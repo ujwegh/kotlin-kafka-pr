@@ -4,4 +4,5 @@ interface KafkaService {
     fun sendMessage(topic: String, userName: String, text: String)
     fun getTopics(): List<String>
     fun createTopic(name: String)
+    fun deleteTopic(name: String)
 }
