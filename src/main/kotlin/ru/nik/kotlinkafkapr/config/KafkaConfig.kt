@@ -31,12 +31,10 @@ class KafkaConfig {
     private val port: Int = 0
 
 
-    @Bean
+
     fun adminClient() : AdminClient {
         val props: Map<String, Any> = hashMapOf(
-        Pair(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, listOf("$host:$port")),
-        Pair(AdminClientConfig.RETRIES_CONFIG, 5))
-
+        Pair(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, listOf("$host:$port")))
         return AdminClient.create(props)
     }
 

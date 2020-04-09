@@ -16,8 +16,7 @@ import kotlin.streams.toList
 
 @Service
 class KafkaServiceImpl(val kafkaTemplate: KafkaTemplate<String, Message>,
-                       val consumerFactory: ConsumerFactory<String, String>,
-                       val adminClient: AdminClient) : KafkaService {
+                       val consumerFactory: ConsumerFactory<String, String>) : KafkaService {
 
     companion object {
         private val logger = LoggerFactory.getLogger(KafkaServiceImpl::class.java)
@@ -30,7 +29,9 @@ class KafkaServiceImpl(val kafkaTemplate: KafkaTemplate<String, Message>,
     }
 
     override fun getTopics(): List<String> {
+        val adminClient = createAdminClient()
         val result: ListTopicsResult = adminClient.listTopics()
+        adminClient.close()
         return result.names().get().stream().toList()
     }
 
@@ -40,31 +41,42 @@ class KafkaServiceImpl(val kafkaTemplate: KafkaTemplate<String, Message>,
         if (existedTopics.contains(name)) {
             throw TopicException("Topic with name: $name already exist.")
         }
-
-        adminClient.use { adminClient ->
+        val adminClient = createAdminClient()
+        adminClient.use { client ->
             val newTopic = NewTopic(name, 3, 1)
             try {
-                val result: CreateTopicsResult = adminClient.createTopics(listOf(newTopic))
+                val result: CreateTopicsResult = client.createTopics(listOf(newTopic))
                 result.all().get()
             } catch (e: Exception) {
                 throw TopicException("Failed to create topic: $name")
+            } finally {
+                client.close()
             }
         }
     }
 
     override fun deleteTopic(name: String) {
         logger.info("In deleting topic: {}", name)
+        val adminClient = createAdminClient()
         try {
             val result: DeleteTopicsResult = adminClient.deleteTopics(Collections.singleton(name))
             result.all().get()
         } catch (e: Exception) {
             throw TopicException("Failed to delete topic: $name")
+        }finally {
+            adminClient.close()
         }
     }
 
     @KafkaListener(topicPattern = "users")
     fun consume(message: String?) {
-        logger.info("=> consumed {}", message);
+        logger.info("=> consumed {}", message)
+    }
+
+    fun createAdminClient() : AdminClient {
+        val props: Map<String, Any> = hashMapOf(
+                Pair(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, listOf("localhost:9092")))
+        return AdminClient.create(props)
     }
 }
 
